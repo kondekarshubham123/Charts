@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Chart</title>
+</head>
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/wordcloud.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+<!-- JQuery links  -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+<body>
+    <div id="wordcloud"></div>
+</body>
+<script>
+
+    var WordChart
+
+    function requestDataWord(){
+        var requests = $.get('http://localhost:5500/Charts/html/WordChart/words.json');
+        var tm = requests.done(function (result){
+            // console.log(result[0])
+            for (var i = 0; i < result.length; i++) {
+                // console.log(result[i])
+                chan = []
+                chan.push(result[i][0]);
+                chan.push(result[i][1]);
+                WordChart.series[0].data[0].update(chan)
+            }
+            
+            setTimeout(requestDataWord,5000);
+        });
+    }
+
+    WordChart = new Highcharts.chart({
+        chart:{
+            renderTo : 'wordcloud',
+            events :{
+            load : requestDataWord
+            }
+        },
+        accessibility: {
+            screenReaderSection: {
+                beforeChartFormat: '<h5>{chartTitle}</h5>' +
+                    '<div>{chartSubtitle}</div>' +
+                    '<div>{chartLongdesc}</div>' +
+                    '<div>{viewTableButton}</div>'
+            }
+        },
+        series: [{
+            type: 'wordcloud',
+            data: [{
+                name: 'Lorem',
+                weight: 3
+            }, {
+                name: 'Ipsum',
+                weight: 2
+            }, {
+                name: 'Dolor',
+                weight: 1
+            }],
+            name: 'Occurrences'
+        }],
+        title: {
+            text: 'Live Wordcloud of Sentiments'
+        }
+    });
+</script>
+</html>
