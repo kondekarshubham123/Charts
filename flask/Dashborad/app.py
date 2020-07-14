@@ -49,8 +49,10 @@ def data():
 @app.route('/words', methods=["GET", "POST"])
 def wordsdata():
 
-    data = "My Name is Shubsdfghjkwhdc wudiwuddad ksd ham Kondekar Kondekar Kondekar"
-    data+=' Kondekar'
+    data =''
+    if len(data)==0:
+        data = 'Kondekar '
+    data+='Kondekar Shubham Deepakrao, Im a good boy'
 
     response = make_response(json.dumps(data))
 

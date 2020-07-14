@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stacked Bar Chart</title>
+
+<!--High CHART LIVE  -->
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/highcharts-more.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+<!-- JQuery links  -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<body>
+    <div id="BarChar"></div>
+</body>
+<script>
+    
+  function requestBar() {
+    var requestsBar = $.get('/data');
+
+    var tm = requestsBar.done(function(result){
+      console.log(result[0])
+
+      for (let main = 0; main < result.length; main++) {
+        for (let index = 0; index < result[0].length; index++) {
+            BarChart.series[main].data[index].update(result[main][index]);
+        } 
+      }
+
+      setInterval(requestBar,15000);
+
+      // console.log(BarChart.series[0].data[0])
+    });
+    
+  }
+
+  $(document).ready(function(){
+    BarChart = new Highcharts.chart({
+      chart: {
+          renderTo:"BarChar",
+          type: 'column',
+          events : {
+            load:requestBar
+        }
+      },
+      title: {
+          text: 'Stacked column chart'
+      },
+      xAxis: {
+          categories: ['City1', 'City2', 'City3', 'City4', 'City5']
+      },
+      yAxis: {
+          min: 0,
+          title: {
+              text: 'Sentiments in %'
+          }
+      },
+      tooltip: {
+          pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>',
+          shared: true
+      },
+      plotOptions: {
+          column: {
+              stacking: 'percent'
+          }
+      },
+      series: [{
+          name: 'Positive',
+          data: [0, 0, 0, 0, 0],
+          color: "#88ff18"
+      }, {
+          name: 'Neutral',
+          data: [0, 0, 0, 0, 0],
+          color: "#3a68ff"
+      }, {
+          name: 'Negative',
+          data: [0, 0, 0, 0, 0],
+          color: "#ff3737"
+      }]
+  });
+});
+
+</script>
+</html>
