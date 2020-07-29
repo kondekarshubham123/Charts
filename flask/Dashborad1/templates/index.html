@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Dashboard</title>
+
+
+<!--High CHART LIVE  -->
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/highcharts-more.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/wordcloud.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+
+<!-- Resources -->
+<script src="https://cdn.amcharts.com/lib/4/core.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/plugins/wordCloud.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/themes/dataviz.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/themes/animated.js"></script>
+
+<!-- JQuery links  -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+
+<style>
+    #chartdiv {
+    width: 100%;
+    height: 500px;
+  }
+</style>
+</head>
+<body>
+    <div id="Live-Chart1"></div>
+    <div id="DonutCha"></div>
+    <div id="chartdiv"></div>
+</body>
+<script>
+  function requestData()
+  {
+      // Ajax call to get the Data from Flask
+      var requests = $.get('/data');
+
+      var tm = requests.done(function (result)
+      {
+          // Temperature
+          var seriesTemperature = chartTemperatue.series[0],
+              shiftTemperature = seriesTemperature.data.length > 20;
+
+
+          // Add the Point
+          // Positive
+          var data1 = [];
+          data1.push(result[0]);
+          data1.push(result[1]);
+
+
+          // Add the Point
+          // Netural
+          var data2 = [];
+          data2.push(result[0]);
+          data2.push(result[2]);
+
+
+          // Add the Point
+          // Negative
+          var data3 = [];
+          data3.push(result[0]);
+          data3.push(result[3]);
+
+
+
+          chartTemperatue.series[0].addPoint(data1, true, shiftTemperature);
+          chartTemperatue.series[1].addPoint(data2, true, shiftTemperature);
+          chartTemperatue.series[2].addPoint(data3, true, shiftTemperature);
+        //   console.log(chartTemperatue.series[0].data)
+
+          $(".sentiment1").text("");
+          $(".sentiment1").text("Positive : " +  Math.round(data1[1]) );
+
+          $(".sentiment2").text("");
+          $(".sentiment2").text("Neutral : " +  Math.round(data2[1]) );
+
+          $(".sentiment3").text("");
+          $(".sentiment3").text("Negative : " +  Math.round(data3[1]) );
+
+          // call it again after one second
+          setTimeout(requestData, 2000);
+
+      });
+  }
+
+
+  function requestDatala(){
+        var requests = $.get('/dataPiecha');
+
+        var tm = requests.done(function (result){
+
+            console.log(result)
+            loa.series[0].data[0].update(result[0])
+            loa.series[0].data[1].update(result[1])
+            loa.series[0].data[2].update(result[2])
+            setTimeout(requestDatala,2000);
+
+        });
+    }
+
+
+
+
+    $(document).ready(function(){
+    // --------------Chart 1 ----------------------------
+    chartTemperatue = new Highcharts.chart({
+    chart: {
+        renderTo: 'Live-Chart1',
+        type: 'areaspline',
+        events :{
+            load : requestData
+        }
+    },
+    title: {
+        text: 'Live Sentiments Analysis'
+    },
+    legend: {
+        layout: 'vertical',
+        align: 'left',
+        verticalAlign: 'top',
+        x: 150,
+        y: 100,
+        floating: true,
+        borderWidth: 1,
+        backgroundColor:
+            Highcharts.defaultOptions.legend.backgroundColor || '#FFFFFF'
+    },
+    xAxis: {
+        type: 'datetime',
+        tickPixelInterval: 150,
+        maxZoom: 20 * 1000
+    },
+    yAxis: {
+        minPadding: 0.2,
+        maxPadding: 0.2,
+        title: {
+            text: 'Value',
+            margin: 80
+        }
+    },
+    tooltip: {
+        shared: true,
+        valueSuffix: ' Percent'
+    },
+    credits: {
+        enabled: false
+    },
+    plotOptions: {
+        areaspline: {
+            fillOpacity: 0.5
+        }
+    },
+    series: [{
+        color : '#88ff18',
+        lineColor: '#303030',
+        name: 'Positive',
+        data: []
+    }, {
+        color : '#3a68ff',
+        lineColor: '#303030',
+        name: 'Neutral',
+        data: []
+    },{
+        color : '#ea0000',
+        lineColor: '#303030',
+        name: 'Negative',
+        data: []
+    }]
+});
+      // --------------Chart 1 Ends - -----------------
+    loa = Highcharts.chart('DonutCha', {
+    chart: {
+        type: 'pie',
+        options3d: {
+            enabled: true,
+            alpha: 45
+        },
+        events : {
+            load:requestDatala
+        },
+        plotBorderColor: '#606063'
+    },credits: {
+        enabled: false
+    },
+    title: {
+        text: 'Daily Sentiment Analyser',
+    },
+    subtitle: {
+        text: '3D donut in Highcharts'
+    },
+    plotOptions: {
+        pie: {
+            innerSize: 100,
+            depth: 60
+        }
+    },
+    series: [{
+        name: 'Sentiment Analyser',
+        data: [
+            ['Positive', 0],
+            ['Neutral', 0],
+            ['Negative', 0]
+        ]
+    }]
+  });
+  // --------------Chart 2 Ends -------------------
+  am4core.ready(function() {
+  
+  // Themes begin
+  am4core.useTheme(am4themes_dataviz);
+  am4core.useTheme(am4themes_animated);
+  // Themes end
+  
+  var chart = am4core.create("chartdiv", am4plugins_wordCloud.WordCloud);
+  var series = chart.series.push(new am4plugins_wordCloud.WordCloudSeries());
+  
+  series.accuracy = 4;
+  series.step = 15;
+  series.rotationThreshold = 0.7;
+  series.maxCount = 200;
+  series.minWordLength = 2;
+  series.labels.template.margin(4,4,4,4);
+  series.maxFontSize = am4core.percent(30);
+  
+  series.text = "Sentiments" 
+
+  series.colors = new am4core.ColorSet();
+  series.colors.passOptions = {}; // makes it loop
+  
+  //series.labelsContainer.rotation = 45;
+  series.angles = [0,-90];
+  series.fontWeight = "700"
+  
+  setInterval(function () {
+    
+    var requests = $.get('/words');
+
+    var tm = requests.done(function (result){
+
+    series.text = result;   
+    })
+    series.dataItems.getIndex(Math.round(Math.random() * (series.dataItems.length - 1))).setValue("value", Math.round(Math.random() * 10));
+   }, 10000)
+  
+  }); // end am4core.ready()
+
+
+
+});
+
+</script>
+</html>
